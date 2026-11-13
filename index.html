@@ -12,11 +12,15 @@
         h1 { font-size: 1.3rem; margin-bottom: 10px; color: #075e54; }
         p.instructions { font-size: 0.9rem; color: #666; margin-bottom: 15px; }
         
-        textarea { width: 100%; height: 120px; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; font-family: inherit; resize: vertical; margin-bottom: 15px; }
+        textarea { width: 100%; height: 120px; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; font-family: inherit; resize: vertical; margin-bottom: 10px; }
         textarea:focus { outline: none; border-color: #25d366; box-shadow: 0 0 5px rgba(37, 211, 102, 0.3); }
         
+        .btn-group { display: flex; gap: 10px; }
         .btn { background-color: #25d366; color: white; border: none; padding: 12px 24px; font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .btn:hover { background-color: #1ebd56; }
+        
+        .btn-clear { background-color: #e74c3c; color: white; border: none; padding: 12px 20px; font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-clear:hover { background-color: #c0392b; }
         
         /* Layout de A4 Paisagem com 2 Vias Lado a Lado (Colunas) */
         .page-container {
@@ -45,49 +49,52 @@
         }
 
         .via-header {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: bold;
             text-transform: uppercase;
-            color: #555;
+            color: #111;
             margin-bottom: 6px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 4px;
+            border-bottom: 1px solid #bbb;
+            padding-bottom: 6px;
+            text-align: center;
         }
 
         .via-content {
             flex: 1;
             white-space: pre-wrap;
             word-break: break-word;
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             line-height: 1.35;
-            color: #111;
+            color: #000000;
+            font-weight: 500;
             overflow: hidden;
             margin-bottom: 6px;
         }
 
         .via-footer {
-            border-top: 1px solid #ccc;
+            border-top: 1px solid #bbb;
             padding-top: 6px;
-            font-size: 0.62rem;
-            line-height: 1.25;
-            color: #444;
+            font-size: 0.72rem;
+            line-height: 1.3;
+            color: #111;
         }
 
         .via-footer .cdc {
             margin-bottom: 4px;
             text-align: justify;
+            font-weight: 500;
         }
 
         .via-footer .highlight {
             font-weight: bold;
-            color: #c0392b;
+            color: #b03a2e;
             text-align: center;
             margin-bottom: 2px;
         }
 
         .via-footer .rules {
             font-weight: bold;
-            color: #333;
+            color: #000;
             text-align: center;
         }
 
@@ -136,13 +143,16 @@
         <h1>Gerador de WhatsApp - 2 Vias Lado a Lado (Paisagem)</h1>
         <p class="instructions">Cole o texto do WhatsApp abaixo. Ele será duplicado nas duas colunas com os avisos fixos no rodapé.</p>
         <textarea id="whatsappInput" placeholder="Cole o texto do WhatsApp aqui..."></textarea>
-        <button class="btn" onclick="window.print()">🖨️ Imprimir / Salvar em PDF</button>
+        <div class="btn-group">
+            <button class="btn" onclick="window.print()">🖨️ Imprimir / Salvar em PDF</button>
+            <button class="btn-clear" onclick="limparTexto()">🧹 Limpar</button>
+        </div>
     </div>
 
     <div class="page-container">
         <!-- Via 1 (Esquerda) -->
         <div class="via">
-            <div class="via-header">Via do Cliente</div>
+            <div class="via-header">VIA DO CLIENTE</div>
             <div class="via-content" id="outputVia1">O texto colado do WhatsApp aparecerá aqui...</div>
             <div class="via-footer">
                 <div class="cdc">Ciente de que, em caso de avarias de fábrica em peças isoladas constatadas na abertura da embalagem, o procedimento padrão é a solicitação de assistência técnica (peça de reposição) via manual do produto, conforme o art. 18 do CDC.</div>
@@ -156,7 +166,7 @@
 
         <!-- Via 2 (Direita) -->
         <div class="via">
-            <div class="via-header">Via da Empresa / Emitente</div>
+            <div class="via-header">VIA DO ESTABELECIMENTO</div>
             <div class="via-content" id="outputVia2">O texto colado do WhatsApp aparecerá aqui...</div>
             <div class="via-footer">
                 <div class="cdc">Ciente de que, em caso de avarias de fábrica em peças isoladas constatadas na abertura da embalagem, o procedimento padrão é a solicitação de assistência técnica (peça de reposição) via manual do produto, conforme o art. 18 do CDC.</div>
@@ -175,12 +185,19 @@
             const texto = input.value;
             if (texto.trim() === '') {
                 out1.innerText = 'O texto colado do WhatsApp aparecerá aqui...';
-                out2.innerText = 'O texto colado aparecerá aqui...';
+                out2.innerText = 'O texto colado do WhatsApp aparecerá aqui...';
             } else {
                 out1.innerText = texto;
                 out2.innerText = texto;
             }
         });
+
+        function limparTexto() {
+            input.value = '';
+            out1.innerText = 'O texto colado do WhatsApp aparecerá aqui...';
+            out2.innerText = 'O texto colado do WhatsApp aparecerá aqui...';
+            input.focus();
+        }
     </script>
 </body>
 </html>
