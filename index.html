@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conversor WhatsApp para PDF (2 Vias Paisagem)</title>
+    <title>Conversor WhatsApp para PDF (2 Vias Lado a Lado)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
         
-        .no-print { max-width: 800px; margin: 0 auto 20px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .no-print { max-width: 900px; margin: 0 auto 20px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         h1 { font-size: 1.3rem; margin-bottom: 10px; color: #075e54; }
         p.instructions { font-size: 0.9rem; color: #666; margin-bottom: 15px; }
         
@@ -18,24 +18,25 @@
         .btn { background-color: #25d366; color: white; border: none; padding: 12px 24px; font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .btn:hover { background-color: #1ebd56; }
         
-        /* Layout de Impressão e Visualização em A4 Paisagem */
+        /* Layout de A4 Paisagem com 2 Vias Lado a Lado (Colunas) */
         .page-container {
             width: 297mm;
             height: 210mm;
             background: white;
             margin: 0 auto;
-            padding: 10mm 15mm;
+            padding: 10mm 12mm;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             justify-content: space-between;
             position: relative;
         }
 
         .via {
-            height: 46%;
+            width: 48%;
+            height: 100%;
             border: 1px dashed #b2b2b2;
-            padding: 12px 18px;
+            padding: 15px 18px;
             border-radius: 6px;
             background: #fafafa;
             display: flex;
@@ -48,7 +49,7 @@
             font-weight: bold;
             text-transform: uppercase;
             color: #555;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             border-bottom: 1px solid #eee;
@@ -66,20 +67,24 @@
         }
 
         .cut-line {
-            width: 100%;
-            text-align: center;
-            border-bottom: 2px dashed #888;
-            line-height: 0.1em;
-            margin: 5px 0;
+            width: 0px;
+            border-right: 2px dashed #888;
+            margin: 0 5px;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .cut-line span {
             background: #fff;
-            padding: 0 10px;
+            padding: 10px 0;
             font-size: 0.75rem;
             color: #666;
             font-weight: bold;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            border-radius: 4px;
         }
 
         /* Configurações de Impressão */
@@ -91,7 +96,7 @@
                 margin: 0;
                 width: 100vw;
                 height: 100vh;
-                padding: 8mm 12mm;
+                padding: 8mm 10mm;
             }
             @page {
                 size: A4 landscape;
@@ -103,30 +108,30 @@
 <body>
 
     <div class="no-print">
-        <h1>Gerador de Recibo / Via WhatsApp</h1>
-        <p class="instructions">Cole o texto que você recebeu no WhatsApp abaixo. Ele será duplicado automaticamente nas duas vias da folha paisagem.</p>
+        <h1>Gerador de WhatsApp - 2 Vias Lado a Lado (Paisagem)</h1>
+        <p class="instructions">Cole o texto do WhatsApp abaixo. Ele será duplicado em duas colunas verticais na folha paisagem.</p>
         <textarea id="whatsappInput" placeholder="Cole o texto do WhatsApp aqui..."></textarea>
         <button class="btn" onclick="window.print()">🖨️ Imprimir / Salvar em PDF</button>
     </div>
 
     <div class="page-container">
-        <!-- Via 1 (Superior) -->
+        <!-- Via 1 (Esquerda) -->
         <div class="via">
             <div class="via-header">
                 <span>Via do Cliente</span>
-                <span>Documento / Mensagem Original</span>
+                <span>Original</span>
             </div>
             <div class="via-content" id="outputVia1">O texto colado aparecerá aqui...</div>
         </div>
 
-        <!-- Linha de Corte -->
+        <!-- Linha de Corte Vertical -->
         <div class="cut-line"><span>✂️ Corte aqui ✂️</span></div>
 
-        <!-- Via 2 (Inferior) -->
+        <!-- Via 2 (Direita) -->
         <div class="via">
             <div class="via-header">
                 <span>Via da Empresa / Emitente</span>
-                <span>Documento / Mensagem Original</span>
+                <span>Original</span>
             </div>
             <div class="via-content" id="outputVia2">O texto colado aparecerá aqui...</div>
         </div>
