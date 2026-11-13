@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conversor WhatsApp para PDF (Fila e Histórico)</title>
+    <title>Sistema de Notas</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
@@ -146,7 +146,7 @@
             width: 48%;
             height: 100%;
             border: 2px solid #555;
-            padding: 12px 15px;
+            padding: 12px 15px; /* <--- AJUSTADO PARA O FORMATO COMPACTO ORIGINAL */
             border-radius: 6px;
             background: #fafafa;
             display: flex;
@@ -248,18 +248,18 @@
 <body>
 
     <div class="no-print">
-        <h1>Gerador de WhatsApp - Fila e Histórico de Impressão</h1>
-        <p class="instructions">Adicione os pedidos à fila, imprima (o lote será salvo automaticamente no histórico por data) ou consulte impressões anteriores a qualquer momento.</p>
+        <h1>Sistema de Notas</h1>
+        <p class="instructions">Adicione vários pedidos à fila, imprima o lote (ele será salvo automaticamente no histórico) ou consulte impressões anteriores a qualquer momento.</p>
         <textarea id="whatsappInput" placeholder="Cole o texto do pedido do WhatsApp aqui..."></textarea>
         <div class="btn-group">
             <button class="btn-add" onclick="adicionarPedido()">➕ Adicionar Pedido</button>
-            <button class="btn" onclick="imprimirESalvar()">🖨️ Imprimir e Salvar no Histórico</button>
+            <button class="btn" onclick="imprimirESalvar()">🖨️ Imprimir Fila e Salvar</button>
             <button class="btn-history" onclick="abrirHistorico()">📂 Ver Histórico Salvo</button>
             <button class="btn-clear" onclick="limparFila()">🧹 Limpar Fila</button>
             <span class="counter-badge" id="contadorFila">Fila vazia (0 pedidos)</span>
         </div>
 
-        <!-- Painel visual para gerenciar e excluir itens individuais -->
+        <!-- Painel visual para gerenciar e excluir itens individuais da fila -->
         <div id="fila-gerenciar"></div>
     </div>
 
@@ -267,7 +267,7 @@
     <div id="modal-historico">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📂 Histórico de Pedidos Impresos</h2>
+                <h2>📂 Histórico de Lotes Impresos</h2>
                 <button class="btn-del" onclick="fecharHistorico()">✖ Fechar</button>
             </div>
             <div class="historico-lista" id="historicoListaContent">
@@ -282,21 +282,13 @@
             <div class="via">
                 <div class="via-header">VIA DO CLIENTE</div>
                 <div class="via-content">O texto do pedido aparecerá aqui...</div>
-                <div class="via-footer">
-                    <div class="cdc">Ciente de que, em caso de avarias de fábrica em peças isoladas constatadas na abertura da embalagem, o procedimento padrão é a solicitação de assistência técnica (peça de reposição) via manual do produto, conforme o art. 18 do CDC.</div>
-                    <div class="highlight">*** ENVIAR FOTO DA NOTA PARA GARANTIA ***</div>
-                    <div class="rules">NÃO ENTREGAMOS EM DIFÍCIL ACESSO, NÃO SUBIMOS ESCADAS OU USO DE CORDAS.</div>
-                </div>
+                ${rodapéHTML}
             </div>
             <div class="cut-line"><span>✂️ Corte aqui ✂️</span></div>
             <div class="via">
                 <div class="via-header">VIA DO ESTABELECIMENTO</div>
                 <div class="via-content">O texto do pedido aparecerá aqui...</div>
-                <div class="via-footer">
-                    <div class="cdc">Ciente de que, em caso de avarias de fábrica em peças isoladas constatadas na abertura da embalagem, o procedimento padrão é a solicitação de assistência técnica (peça de reposição) via manual do produto, conforme o art. 18 do CDC.</div>
-                    <div class="highlight">*** ENVIAR FOTO DA NOTA PARA GARANTIA ***</div>
-                    <div class="rules">NÃO ENTREGAMOS EM DIFÍCIL ACESSO, NÃO SUBIMOS ESCADAS OU USO DE CORDAS.</div>
-                </div>
+                ${rodapéHTML}
             </div>
         </div>
     </div>
