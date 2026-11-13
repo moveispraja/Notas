@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conversor WhatsApp para PDF (2 Vias Lado a Lado)</title>
+    <title>Conversor WhatsApp para PDF (Fila e Histórico)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
@@ -12,16 +12,120 @@
         h1 { font-size: 1.3rem; margin-bottom: 10px; color: #075e54; }
         p.instructions { font-size: 0.9rem; color: #666; margin-bottom: 15px; }
         
-        textarea { width: 100%; height: 120px; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; font-family: inherit; resize: vertical; margin-bottom: 10px; }
+        textarea { width: 100%; height: 140px; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; font-family: inherit; resize: vertical; margin-bottom: 10px; }
         textarea:focus { outline: none; border-color: #25d366; box-shadow: 0 0 5px rgba(37, 211, 102, 0.3); }
         
-        .btn-group { display: flex; gap: 10px; }
-        .btn { background-color: #25d366; color: white; border: none; padding: 12px 24px; font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 15px; }
+        .btn { background-color: #25d366; color: white; border: none; padding: 12px 20px; font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .btn:hover { background-color: #1ebd56; }
         
+        .btn-add { background-color: #2980b9; color: white; border: none; padding: 12px 20px; font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-add:hover { background-color: #2471a3; }
+        
+        .btn-history { background-color: #8e44ad; color: white; border: none; padding: 12px 20px; font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-history:hover { background-color: #732d91; }
+
         .btn-clear { background-color: #e74c3c; color: white; border: none; padding: 12px 20px; font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .btn-clear:hover { background-color: #c0392b; }
+
+        .counter-badge { font-weight: bold; color: #2980b9; font-size: 0.95rem; margin-left: auto; }
+
+        /* Lista de gerenciamento visual da fila na tela */
+        #fila-gerenciar {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 15px;
+            max-height: 180px;
+            overflow-y: auto;
+            display: none;
+        }
+        .fila-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        .fila-item span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 700px;
+            color: #333;
+        }
+        .btn-del {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .btn-del:hover { background: #c0392b; }
+
+        /* Modal / Painel de Histórico */
+        #modal-historico {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            width: 90%; max-width: 700px;
+            max-height: 80vh;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .modal-header h2 { font-size: 1.2rem; color: #8e44ad; }
+        .historico-lista {
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .historico-lote {
+            background: #fdfdfd;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .historico-info b { color: #333; display: block; margin-bottom: 3px; }
+        .historico-info small { color: #666; }
         
+        /* Container principal de páginas para impressão */
+        #pages-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
         /* Layout de A4 Paisagem com 2 Vias Lado a Lado (Colunas) */
         .page-container {
             width: 297mm;
@@ -34,12 +138,14 @@
             flex-direction: row;
             justify-content: space-between;
             position: relative;
+            page-break-after: always;
+            break-after: page;
         }
 
         .via {
             width: 48%;
             height: 100%;
-            border: 1px dashed #b2b2b2;
+            border: 2px solid #555;
             padding: 12px 15px;
             border-radius: 6px;
             background: #fafafa;
@@ -49,12 +155,12 @@
         }
 
         .via-header {
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             font-weight: bold;
             text-transform: uppercase;
-            color: #111;
+            color: #000;
             margin-bottom: 6px;
-            border-bottom: 1px solid #bbb;
+            border-bottom: 2px solid #444;
             padding-bottom: 6px;
             text-align: center;
         }
@@ -72,7 +178,7 @@
         }
 
         .via-footer {
-            border-top: 1px solid #bbb;
+            border-top: 2px solid #444;
             padding-top: 6px;
             font-size: 0.72rem;
             line-height: 1.3;
@@ -129,6 +235,8 @@
                 width: 100vw;
                 height: 100vh;
                 padding: 8mm 10mm;
+                page-break-after: always;
+                break-after: page;
             }
             @page {
                 size: A4 landscape;
@@ -140,63 +248,224 @@
 <body>
 
     <div class="no-print">
-        <h1>Gerador de WhatsApp - 2 Vias Lado a Lado (Paisagem)</h1>
-        <p class="instructions">Cole o texto do WhatsApp abaixo. Ele será duplicado nas duas colunas com os avisos fixos no rodapé.</p>
-        <textarea id="whatsappInput" placeholder="Cole o texto do WhatsApp aqui..."></textarea>
+        <h1>Gerador de WhatsApp - Fila e Histórico de Impressão</h1>
+        <p class="instructions">Adicione os pedidos à fila, imprima (o lote será salvo automaticamente no histórico por data) ou consulte impressões anteriores a qualquer momento.</p>
+        <textarea id="whatsappInput" placeholder="Cole o texto do pedido do WhatsApp aqui..."></textarea>
         <div class="btn-group">
-            <button class="btn" onclick="window.print()">🖨️ Imprimir / Salvar em PDF</button>
-            <button class="btn-clear" onclick="limparTexto()">🧹 Limpar</button>
+            <button class="btn-add" onclick="adicionarPedido()">➕ Adicionar Pedido</button>
+            <button class="btn" onclick="imprimirESalvar()">🖨️ Imprimir e Salvar no Histórico</button>
+            <button class="btn-history" onclick="abrirHistorico()">📂 Ver Histórico Salvo</button>
+            <button class="btn-clear" onclick="limparFila()">🧹 Limpar Fila</button>
+            <span class="counter-badge" id="contadorFila">Fila vazia (0 pedidos)</span>
+        </div>
+
+        <!-- Painel visual para gerenciar e excluir itens individuais -->
+        <div id="fila-gerenciar"></div>
+    </div>
+
+    <!-- Modal de Histórico -->
+    <div id="modal-historico">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📂 Histórico de Pedidos Impresos</h2>
+                <button class="btn-del" onclick="fecharHistorico()">✖ Fechar</button>
+            </div>
+            <div class="historico-lista" id="historicoListaContent">
+                <!-- Itens salvos aparecerão aqui -->
+            </div>
         </div>
     </div>
 
-    <div class="page-container">
-        <!-- Via 1 (Esquerda) -->
-        <div class="via">
-            <div class="via-header">VIA DO CLIENTE</div>
-            <div class="via-content" id="outputVia1">O texto colado do WhatsApp aparecerá aqui...</div>
-            <div class="via-footer">
-                <div class="cdc">Ciente de que, em caso de avarias de fábrica em peças isoladas constatadas na abertura da embalagem, o procedimento padrão é a solicitação de assistência técnica (peça de reposição) via manual do produto, conforme o art. 18 do CDC.</div>
-                <div class="highlight">*** ENVIAR FOTO DA NOTA PARA GARANTIA ***</div>
-                <div class="rules">NÃO ENTREGAMOS EM DIFÍCIL ACESSO, NÃO SUBIMOS ESCADAS OU USO DE CORDAS.</div>
+    <!-- Onde as páginas da fila serão geradas -->
+    <div id="pages-wrapper">
+        <div class="page-container">
+            <div class="via">
+                <div class="via-header">VIA DO CLIENTE</div>
+                <div class="via-content">O texto do pedido aparecerá aqui...</div>
+                <div class="via-footer">
+                    <div class="cdc">Ciente de que, em caso de avarias de fábrica em peças isoladas constatadas na abertura da embalagem, o procedimento padrão é a solicitação de assistência técnica (peça de reposição) via manual do produto, conforme o art. 18 do CDC.</div>
+                    <div class="highlight">*** ENVIAR FOTO DA NOTA PARA GARANTIA ***</div>
+                    <div class="rules">NÃO ENTREGAMOS EM DIFÍCIL ACESSO, NÃO SUBIMOS ESCADAS OU USO DE CORDAS.</div>
+                </div>
             </div>
-        </div>
-
-        <!-- Linha de Corte Vertical -->
-        <div class="cut-line"><span>✂️ Corte aqui ✂️</span></div>
-
-        <!-- Via 2 (Direita) -->
-        <div class="via">
-            <div class="via-header">VIA DO ESTABELECIMENTO</div>
-            <div class="via-content" id="outputVia2">O texto colado do WhatsApp aparecerá aqui...</div>
-            <div class="via-footer">
-                <div class="cdc">Ciente de que, em caso de avarias de fábrica em peças isoladas constatadas na abertura da embalagem, o procedimento padrão é a solicitação de assistência técnica (peça de reposição) via manual do produto, conforme o art. 18 do CDC.</div>
-                <div class="highlight">*** ENVIAR FOTO DA NOTA PARA GARANTIA ***</div>
-                <div class="rules">NÃO ENTREGAMOS EM DIFÍCIL ACESSO, NÃO SUBIMOS ESCADAS OU USO DE CORDAS.</div>
+            <div class="cut-line"><span>✂️ Corte aqui ✂️</span></div>
+            <div class="via">
+                <div class="via-header">VIA DO ESTABELECIMENTO</div>
+                <div class="via-content">O texto do pedido aparecerá aqui...</div>
+                <div class="via-footer">
+                    <div class="cdc">Ciente de que, em caso de avarias de fábrica em peças isoladas constatadas na abertura da embalagem, o procedimento padrão é a solicitação de assistência técnica (peça de reposição) via manual do produto, conforme o art. 18 do CDC.</div>
+                    <div class="highlight">*** ENVIAR FOTO DA NOTA PARA GARANTIA ***</div>
+                    <div class="rules">NÃO ENTREGAMOS EM DIFÍCIL ACESSO, NÃO SUBIMOS ESCADAS OU USO DE CORDAS.</div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const input = document.getElementById('whatsappInput');
-        const out1 = document.getElementById('outputVia1');
-        const out2 = document.getElementById('outputVia2');
+        const wrapper = document.getElementById('pages-wrapper');
+        const contadorFila = document.getElementById('contadorFila');
+        const filaGerenciar = document.getElementById('fila-gerenciar');
+        const modalHistorico = document.getElementById('modal-historico');
+        const historicoListaContent = document.getElementById('historicoListaContent');
+        
+        let listaPedidos = [];
 
-        input.addEventListener('input', () => {
-            const texto = input.value;
-            if (texto.trim() === '') {
-                out1.innerText = 'O texto colado do WhatsApp aparecerá aqui...';
-                out2.innerText = 'O texto colado do WhatsApp aparecerá aqui...';
-            } else {
-                out1.innerText = texto;
-                out2.innerText = texto;
+        const rodapéHTML = `
+            <div class="via-footer">
+                <div class="cdc">Ciente de que, em caso de avarias de fábrica em peças isoladas constatadas na abertura da embalagem, o procedimento padrão é a solicitação de assistência técnica (peça de reposição) via manual do produto, conforme o art. 18 do CDC.</div>
+                <div class="highlight">*** ENVIAR FOTO DA NOTA PARA GARANTIA ***</div>
+                <div class="rules">NÃO ENTREGAMOS EM DIFÍCIL ACESSO, NÃO SUBIMOS ESCADAS OU USO DE CORDAS.</div>
+            </div>
+        `;
+
+        function adicionarPedido() {
+            let texto = input.value.trim();
+            if (texto === '') {
+                alert('Cole o texto do pedido primeiro antes de adicionar!');
+                return;
             }
-        });
 
-        function limparTexto() {
+            listaPedidos.push(texto);
             input.value = '';
-            out1.innerText = 'O texto colado do WhatsApp aparecerá aqui...';
-            out2.innerText = 'O texto colado do WhatsApp aparecerá aqui...';
             input.focus();
+            atualizarTela();
+        }
+
+        function removerPedido(index) {
+            listaPedidos.splice(index, 1);
+            atualizarTela();
+        }
+
+        function atualizarTela() {
+            if (listaPedidos.length === 0) {
+                contadorFila.innerText = "Fila vazia (0 pedidos)";
+                filaGerenciar.style.display = 'none';
+                wrapper.innerHTML = `
+                    <div class="page-container">
+                        <div class="via">
+                            <div class="via-header">VIA DO CLIENTE</div>
+                            <div class="via-content">O texto do pedido aparecerá aqui...</div>
+                            ${rodapéHTML}
+                        </div>
+                        <div class="cut-line"><span>✂️ Corte aqui ✂️</span></div>
+                        <div class="via">
+                            <div class="via-header">VIA DO ESTABELECIMENTO</div>
+                            <div class="via-content">O texto do pedido aparecerá aqui...</div>
+                            ${rodapéHTML}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            contadorFila.innerText = `📦 Pedidos na fila: ${listaPedidos.length}`;
+            filaGerenciar.style.display = 'block';
+            
+            filaGerenciar.innerHTML = '<strong style="font-size:0.85rem; display:block; margin-bottom:6px; color:#555;">Gerenciar Fila de Pedidos:</strong>';
+            listaPedidos.forEach((pedido, index) => {
+                let primeiraLinha = pedido.split('\n')[0];
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'fila-item';
+                itemDiv.innerHTML = `
+                    <span><b>#${index + 1}</b> - ${primeiraLinha}</span>
+                    <button class="btn-del" onclick="removerPedido(${index})">❌ Excluir</button>
+                `;
+                filaGerenciar.appendChild(itemDiv);
+            });
+
+            wrapper.innerHTML = '';
+            listaPedidos.forEach((pedido) => {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'page-container';
+                pageDiv.innerHTML = `
+                    <div class="via">
+                        <div class="via-header">VIA DO CLIENTE</div>
+                        <div class="via-content"></div>
+                        ${rodapéHTML}
+                    </div>
+                    <div class="cut-line"><span>✂️ Corte aqui ✂️</span></div>
+                    <div class="via">
+                        <div class="via-header">VIA DO ESTABELECIMENTO</div>
+                        <div class="via-content"></div>
+                        ${rodapéHTML}
+                    </div>
+                `;
+                pageDiv.querySelectorAll('.via-content').forEach(el => {
+                    el.innerText = pedido;
+                });
+                wrapper.appendChild(pageDiv);
+            });
+        }
+
+        function limparFila() {
+            if (confirm('Deseja limpar toda a fila de pedidos?')) {
+                listaPedidos = [];
+                input.value = '';
+                atualizarTela();
+                input.focus();
+            }
+        }
+
+        function imprimirESalvar() {
+            if (listaPedidos.length === 0) {
+                alert('Adicione pelo menos um pedido na fila antes de imprimir!');
+                return;
+            }
+
+            // Salva no Histórico do Navegador (LocalStorage)
+            let historico = JSON.parse(localStorage.getItem('historicoNotas')) || [];
+            let agora = new Date();
+            let dataFormatada = agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            
+            let novoLote = {
+                data: dataFormatada,
+                pedidos: [...listaPedidos]
+            };
+
+            historico.unshift(novoLote); // Adiciona no topo
+            localStorage.setItem('historicoNotas', JSON.stringify(historico));
+
+            // Executa a impressão
+            window.print();
+        }
+
+        function abrirHistorico() {
+            let historico = JSON.parse(localStorage.getItem('historicoNotas')) || [];
+            historicoListaContent.innerHTML = '';
+
+            if (historico.length === 0) {
+                historicoListaContent.innerHTML = '<p style="text-align:center; color:#666; padding: 20px;">Nenhum histórico de impressão salvo ainda.</p>';
+            } else {
+                historico.forEach((lote, index) => {
+                    const loteDiv = document.createElement('div');
+                    loteDiv.className = 'historico-lote';
+                    loteDiv.innerHTML = `
+                        <div class="historico-info">
+                            <b>Lote impresso em: ${lote.data}</b>
+                            <small>${lote.pedidos.length} pedido(s) neste lote</small>
+                        </div>
+                        <button class="btn" style="padding: 8px 14px; font-size: 0.85rem;" onclick="carregarLote(${index})">👁️ Visualizar / Reimprimir</button>
+                    `;
+                    historicoListaContent.appendChild(loteDiv);
+                });
+            }
+
+            modalHistorico.style.display = 'flex';
+        }
+
+        function fecharHistorico() {
+            modalHistorico.style.display = 'none';
+        }
+
+        function carregarLote(index) {
+            let historico = JSON.parse(localStorage.getItem('historicoNotas')) || [];
+            if (historico[index]) {
+                listaPedidos = historico[index].pedidos;
+                atualizarTela();
+                fecharHistorico();
+                alert('Lote carregado com sucesso na tela!');
+            }
         }
     </script>
 </body>
