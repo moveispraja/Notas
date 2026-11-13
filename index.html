@@ -36,7 +36,7 @@
             width: 48%;
             height: 100%;
             border: 1px dashed #b2b2b2;
-            padding: 15px 18px;
+            padding: 12px 15px;
             border-radius: 6px;
             background: #fafafa;
             display: flex;
@@ -49,9 +49,7 @@
             font-weight: bold;
             text-transform: uppercase;
             color: #555;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
+            margin-bottom: 6px;
             border-bottom: 1px solid #eee;
             padding-bottom: 4px;
         }
@@ -60,10 +58,37 @@
             flex: 1;
             white-space: pre-wrap;
             word-break: break-word;
-            font-size: 0.95rem;
-            line-height: 1.4;
+            font-size: 0.85rem;
+            line-height: 1.35;
             color: #111;
             overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .via-footer {
+            border-top: 1px solid #ccc;
+            padding-top: 6px;
+            font-size: 0.62rem;
+            line-height: 1.25;
+            color: #444;
+        }
+
+        .via-footer .cdc {
+            margin-bottom: 4px;
+            text-align: justify;
+        }
+
+        .via-footer .highlight {
+            font-weight: bold;
+            color: #c0392b;
+            text-align: center;
+            margin-bottom: 2px;
+        }
+
+        .via-footer .rules {
+            font-weight: bold;
+            color: #333;
+            text-align: center;
         }
 
         .cut-line {
@@ -109,7 +134,7 @@
 
     <div class="no-print">
         <h1>Gerador de WhatsApp - 2 Vias Lado a Lado (Paisagem)</h1>
-        <p class="instructions">Cole o texto do WhatsApp abaixo. Ele será duplicado em duas colunas verticais na folha paisagem.</p>
+        <p class="instructions">Cole o texto do WhatsApp abaixo. Ele será duplicado nas duas colunas com os avisos fixos no rodapé.</p>
         <textarea id="whatsappInput" placeholder="Cole o texto do WhatsApp aqui..."></textarea>
         <button class="btn" onclick="window.print()">🖨️ Imprimir / Salvar em PDF</button>
     </div>
@@ -117,11 +142,13 @@
     <div class="page-container">
         <!-- Via 1 (Esquerda) -->
         <div class="via">
-            <div class="via-header">
-                <span>Via do Cliente</span>
-                <span>Original</span>
+            <div class="via-header">Via do Cliente</div>
+            <div class="via-content" id="outputVia1">O texto colado do WhatsApp aparecerá aqui...</div>
+            <div class="via-footer">
+                <div class="cdc">Ciente de que, em caso de avarias de fábrica em peças isoladas constatadas na abertura da embalagem, o procedimento padrão é a solicitação de assistência técnica (peça de reposição) via manual do produto, conforme o art. 18 do CDC.</div>
+                <div class="highlight">*** ENVIAR FOTO DA NOTA PARA GARANTIA ***</div>
+                <div class="rules">NÃO ENTREGAMOS EM DIFÍCIL ACESSO, NÃO SUBIMOS ESCADAS OU USO DE CORDAS.</div>
             </div>
-            <div class="via-content" id="outputVia1">O texto colado aparecerá aqui...</div>
         </div>
 
         <!-- Linha de Corte Vertical -->
@@ -129,11 +156,13 @@
 
         <!-- Via 2 (Direita) -->
         <div class="via">
-            <div class="via-header">
-                <span>Via da Empresa / Emitente</span>
-                <span>Original</span>
+            <div class="via-header">Via da Empresa / Emitente</div>
+            <div class="via-content" id="outputVia2">O texto colado do WhatsApp aparecerá aqui...</div>
+            <div class="via-footer">
+                <div class="cdc">Ciente de que, em caso de avarias de fábrica em peças isoladas constatadas na abertura da embalagem, o procedimento padrão é a solicitação de assistência técnica (peça de reposição) via manual do produto, conforme o art. 18 do CDC.</div>
+                <div class="highlight">*** ENVIAR FOTO DA NOTA PARA GARANTIA ***</div>
+                <div class="rules">NÃO ENTREGAMOS EM DIFÍCIL ACESSO, NÃO SUBIMOS ESCADAS OU USO DE CORDAS.</div>
             </div>
-            <div class="via-content" id="outputVia2">O texto colado aparecerá aqui...</div>
         </div>
     </div>
 
@@ -145,7 +174,7 @@
         input.addEventListener('input', () => {
             const texto = input.value;
             if (texto.trim() === '') {
-                out1.innerText = 'O texto colado aparecerá aqui...';
+                out1.innerText = 'O texto colado do WhatsApp aparecerá aqui...';
                 out2.innerText = 'O texto colado aparecerá aqui...';
             } else {
                 out1.innerText = texto;
