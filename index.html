@@ -100,12 +100,39 @@
             margin-bottom: 15px;
         }
         .modal-header h2 { font-size: 1.2rem; color: #8e44ad; }
+        
+        /* Campo de Pesquisa no Histórico */
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .search-box:focus { outline: none; border-color: #8e44ad; box-shadow: 0 0 5px rgba(142, 68, 173, 0.3); }
+
         .historico-lista {
             overflow-y: auto;
             flex: 1;
             display: flex;
             flex-direction: column;
             gap: 10px;
+        }
+        
+        /* Agrupamento por Dia */
+        .dia-grupo {
+            margin-bottom: 15px;
+        }
+        .dia-titulo {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #8e44ad;
+            background: #f4ecf7;
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            border-left: 4px solid #8e44ad;
         }
         .historico-lote {
             background: #fdfdfd;
@@ -115,6 +142,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 6px;
         }
         .historico-info b { color: #333; display: block; margin-bottom: 3px; }
         .historico-info small { color: #666; }
@@ -146,7 +174,7 @@
             width: 48%;
             height: 100%;
             border: 2px solid #555;
-            padding: 12px 15px; /* <--- AJUSTADO PARA O FORMATO COMPACTO ORIGINAL */
+            padding: 12px 15px;
             border-radius: 6px;
             background: #fafafa;
             display: flex;
@@ -159,7 +187,8 @@
             font-weight: bold;
             text-transform: uppercase;
             color: #000;
-            margin-bottom: 6px;
+            margin-top: 6px;
+            margin-bottom: 10px;
             border-bottom: 2px solid #444;
             padding-bottom: 6px;
             text-align: center;
@@ -169,8 +198,8 @@
             flex: 1;
             white-space: pre-wrap;
             word-break: break-word;
-            font-size: 0.88rem;
-            line-height: 1.35;
+            font-size: 0.81rem;
+            line-height: 1.3;
             color: #000000;
             font-weight: 500;
             overflow: hidden;
@@ -249,7 +278,7 @@
 
     <div class="no-print">
         <h1>Sistema de Notas</h1>
-        <p class="instructions">Adicione vários pedidos à fila, imprima o lote (ele será salvo automaticamente no histórico) ou consulte impressões anteriores a qualquer momento.</p>
+        <p class="instructions">Adicione vários pedidos à fila, imprima o lote (salvo automaticamente por dia no histórico) ou consulte impressões anteriores.</p>
         <textarea id="whatsappInput" placeholder="Cole o texto do pedido do WhatsApp aqui..."></textarea>
         <div class="btn-group">
             <button class="btn-add" onclick="adicionarPedido()">➕ Adicionar Pedido</button>
@@ -267,9 +296,12 @@
     <div id="modal-historico">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📂 Histórico de Lotes Impresos</h2>
+                <h2>📂 Histórico Organizado por Dia</h2>
                 <button class="btn-del" onclick="fecharHistorico()">✖ Fechar</button>
             </div>
+            <!-- Campo de Pesquisa por Nome do Cliente -->
+            <input type="text" id="inputPesquisa" class="search-box" placeholder="🔍 Pesquisar no histórico por nome do cliente..." oninput="filtrarHistorico()">
+            
             <div class="historico-lista" id="historicoListaContent">
                 <!-- Itens salvos aparecerão aqui -->
             </div>
@@ -300,6 +332,7 @@
         const filaGerenciar = document.getElementById('fila-gerenciar');
         const modalHistorico = document.getElementById('modal-historico');
         const historicoListaContent = document.getElementById('historicoListaContent');
+        const inputPesquisa = document.getElementById('inputPesquisa');
         
         let listaPedidos = [];
 
@@ -318,7 +351,8 @@
                 return;
             }
 
-            listaPedidos.push(texto);
+            // Adiciona no INÍCIO da lista para o último ficar sempre no topo
+            listaPedidos.unshift(texto);
             input.value = '';
             input.focus();
             atualizarTela();
@@ -354,7 +388,7 @@
             contadorFila.innerText = `📦 Pedidos na fila: ${listaPedidos.length}`;
             filaGerenciar.style.display = 'block';
             
-            filaGerenciar.innerHTML = '<strong style="font-size:0.85rem; display:block; margin-bottom:6px; color:#555;">Gerenciar Fila de Pedidos:</strong>';
+            filaGerenciar.innerHTML = '<strong style="font-size:0.85rem; display:block; margin-bottom:6px; color:#555;">Gerenciar Fila de Pedidos (Mais recente no topo):</strong>';
             listaPedidos.forEach((pedido, index) => {
                 let primeiraLinha = pedido.split('\n')[0];
                 const itemDiv = document.createElement('div');
@@ -405,13 +439,15 @@
                 return;
             }
 
-            // Salva no Histórico do Navegador (LocalStorage)
+            // Salva no Histórico do Navegador (LocalStorage) separado por data/hora
             let historico = JSON.parse(localStorage.getItem('historicoNotas')) || [];
             let agora = new Date();
-            let dataFormatada = agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            let dataApenas = agora.toLocaleDateString('pt-BR'); // Ex: "13/11/2026"
+            let horaApenas = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); // Ex: "14:30"
             
             let novoLote = {
-                data: dataFormatada,
+                dataDia: dataApenas,
+                hora: horaApenas,
                 pedidos: [...listaPedidos]
             };
 
@@ -423,27 +459,69 @@
         }
 
         function abrirHistorico() {
+            inputPesquisa.value = ''; // Limpa a pesquisa ao abrir
+            renderizarHistoricoModal();
+            modalHistorico.style.display = 'flex';
+        }
+
+        function renderizarHistoricoModal(filtro = '') {
             let historico = JSON.parse(localStorage.getItem('historicoNotas')) || [];
             historicoListaContent.innerHTML = '';
 
-            if (historico.length === 0) {
-                historicoListaContent.innerHTML = '<p style="text-align:center; color:#666; padding: 20px;">Nenhum histórico de impressão salvo ainda.</p>';
-            } else {
-                historico.forEach((lote, index) => {
-                    const loteDiv = document.createElement('div');
-                    loteDiv.className = 'historico-lote';
-                    loteDiv.innerHTML = `
-                        <div class="historico-info">
-                            <b>Lote impresso em: ${lote.data}</b>
-                            <small>${lote.pedidos.length} pedido(s) neste lote</small>
-                        </div>
-                        <button class="btn" style="padding: 8px 14px; font-size: 0.85rem;" onclick="carregarLote(${index})">👁️ Visualizar / Reimprimir</button>
-                    `;
-                    historicoListaContent.appendChild(loteDiv);
-                });
+            let termo = filtro.toLowerCase().trim();
+
+            // Filtra os lotes caso o usuário digite algo no campo de busca (ex: nome do cliente)
+            let historicoFiltrado = historico.map((lote, indexOriginal) => {
+                return { lote, indexOriginal };
+            }).filter(item => {
+                if (!termo) return true;
+                return item.lote.pedidos.some(pedido => pedido.toLowerCase().includes(termo));
+            });
+
+            if (historicoFiltrado.length === 0) {
+                historicoListaContent.innerHTML = '<p style="text-align:center; color:#666; padding: 20px;">Nenhum registro encontrado.</p>';
+                return;
             }
 
-            modalHistorico.style.display = 'flex';
+            // Agrupa os lotes por dia (dataDia)
+            let diasAgrupados = {};
+            historicoFiltrado.forEach(item => {
+                let dia = item.lote.dataDia;
+                if (!diasAgrupados[dia]) {
+                    diasAgrupados[dia] = [];
+                }
+                diasAgrupados[dia].push(item);
+            });
+
+            // Monta o visual separado por dias na tela
+            for (let dia in diasAgrupados) {
+                const grupoDiv = document.createElement('div');
+                grupoDiv.className = 'dia-grupo';
+                
+                let htmlLotes = `<div class="dia-titulo">📅 Data: ${dia}</div>`;
+                
+                diasAgrupados[dia].forEach(item => {
+                    let lote = item.lote;
+                    let index = item.indexOriginal;
+                    htmlLotes += `
+                        <div class="historico-lote">
+                            <div class="historico-info">
+                                <b>Horário: ${lote.hora}</b>
+                                <small>${lote.pedidos.length} pedido(s) neste lote</small>
+                            </div>
+                            <button class="btn" style="padding: 8px 14px; font-size: 0.85rem;" onclick="carregarLote(${index})">👁️ Visualizar / Reimprimir</button>
+                        </div>
+                    `;
+                });
+
+                grupoDiv.innerHTML = htmlLotes;
+                historicoListaContent.appendChild(grupoDiv);
+            }
+        }
+
+        function filtrarHistorico() {
+            let termo = inputPesquisa.value;
+            renderizarHistoricoModal(termo);
         }
 
         function fecharHistorico() {
@@ -456,7 +534,7 @@
                 listaPedidos = historico[index].pedidos;
                 atualizarTela();
                 fecharHistorico();
-                alert('Lote carregado com sucesso na tela!');
+                alert('Lote do dia carregado com sucesso na tela!');
             }
         }
     </script>
