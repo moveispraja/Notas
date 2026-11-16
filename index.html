@@ -300,7 +300,7 @@
                 <button class="btn-del" onclick="fecharHistorico()">✖ Fechar</button>
             </div>
             <!-- Campo de Pesquisa por Nome do Cliente -->
-            <input type="text" id="inputPesquisa" class="search-box" placeholder="🔍 Pesquisar no histórico por nome do cliente..." oninput="filtrarHistorico()">
+            <input type="text" id="inputPesquisa" class="search-box" placeholder="🔍 Pesquisar no histórico por nome do cliente (Ex: Simone)..." oninput="filtrarHistorico()">
             
             <div class="historico-lista" id="historicoListaContent">
                 <!-- Itens salvos aparecerão aqui -->
@@ -351,7 +351,6 @@
                 return;
             }
 
-            // Adiciona no INÍCIO da lista para o último ficar sempre no topo
             listaPedidos.unshift(texto);
             input.value = '';
             input.focus();
@@ -439,11 +438,10 @@
                 return;
             }
 
-            // Salva no Histórico do Navegador (LocalStorage) separado por data/hora
             let historico = JSON.parse(localStorage.getItem('historicoNotas')) || [];
             let agora = new Date();
-            let dataApenas = agora.toLocaleDateString('pt-BR'); // Ex: "13/11/2026"
-            let horaApenas = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); // Ex: "14:30"
+            let dataApenas = agora.toLocaleDateString('pt-BR');
+            let horaApenas = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
             
             let novoLote = {
                 dataDia: dataApenas,
@@ -451,15 +449,14 @@
                 pedidos: [...listaPedidos]
             };
 
-            historico.unshift(novoLote); // Adiciona no topo
+            historico.unshift(novoLote);
             localStorage.setItem('historicoNotas', JSON.stringify(historico));
 
-            // Executa a impressão
             window.print();
         }
 
         function abrirHistorico() {
-            inputPesquisa.value = ''; // Limpa a pesquisa ao abrir
+            inputPesquisa.value = '';
             renderizarHistoricoModal();
             modalHistorico.style.display = 'flex';
         }
@@ -470,30 +467,35 @@
 
             let termo = filtro.toLowerCase().trim();
 
-            // Filtra os lotes caso o usuário digite algo no campo de busca (ex: nome do cliente)
+            // Filtragem EXATA: O lote só aparece se o texto do pedido contiver exatamente o termo digitado
             let historicoFiltrado = historico.map((lote, indexOriginal) => {
                 return { lote, indexOriginal };
             }).filter(item => {
-                if (!termo) return true;
-                return item.lote.pedidos.some(pedido => pedido.toLowerCase().includes(termo));
+                if (!item.lote || !item.lote.pedidos) return false;
+                
+                // Se tem termo de busca, verifica se está presente em algum pedido do lote
+                if (termo) {
+                    return item.lote.pedidos.some(pedido => pedido.toLowerCase().includes(termo));
+                }
+                return true;
             });
 
             if (historicoFiltrado.length === 0) {
-                historicoListaContent.innerHTML = '<p style="text-align:center; color:#666; padding: 20px;">Nenhum registro encontrado.</p>';
+                historicoListaContent.innerHTML = '<p style="text-align:center; color:#666; padding: 20px;">Nenhum registro encontrado para esta busca.</p>';
                 return;
             }
 
-            // Agrupa os lotes por dia (dataDia)
+            // Agrupa por dia, tratando registros antigos sem data (atribuindo uma data padrão se faltar)
             let diasAgrupados = {};
             historicoFiltrado.forEach(item => {
-                let dia = item.lote.dataDia;
+                let dia = item.lote.dataDia || "Datas Anteriores / Diversos";
                 if (!diasAgrupados[dia]) {
                     diasAgrupados[dia] = [];
                 }
                 diasAgrupados[dia].push(item);
             });
 
-            // Monta o visual separado por dias na tela
+            // Monta o HTML na tela limpo e sem valores "undefined"
             for (let dia in diasAgrupados) {
                 const grupoDiv = document.createElement('div');
                 grupoDiv.className = 'dia-grupo';
@@ -503,10 +505,15 @@
                 diasAgrupados[dia].forEach(item => {
                     let lote = item.lote;
                     let index = item.indexOriginal;
+                    let horario = lote.hora || "Horário não registrado";
+                    
+                    // Pega o nome do primeiro cliente ou a primeira linha para facilitar a identificação visual rápida
+                    let resumoPedido = lote.pedidos[0] ? lote.pedidos[0].split('\n')[0] : "Pedido sem título";
+
                     htmlLotes += `
                         <div class="historico-lote">
                             <div class="historico-info">
-                                <b>Horário: ${lote.hora}</b>
+                                <b>🕒 ${horario} — <span style="color:#2980b9;">${resumoPedido}</span></b>
                                 <small>${lote.pedidos.length} pedido(s) neste lote</small>
                             </div>
                             <button class="btn" style="padding: 8px 14px; font-size: 0.85rem;" onclick="carregarLote(${index})">👁️ Visualizar / Reimprimir</button>
@@ -514,8 +521,8 @@
                     `;
                 });
 
-                grupoDiv.innerHTML = htmlLotes;
-                historicoListaContent.appendChild(grupoDiv);
+                    grupoDiv.innerHTML = htmlLotes;
+                    historicoListaContent.appendChild(grupoDiv);
             }
         }
 
@@ -534,7 +541,7 @@
                 listaPedidos = historico[index].pedidos;
                 atualizarTela();
                 fecharHistorico();
-                alert('Lote do dia carregado com sucesso na tela!');
+                alert('Lote carregado com sucesso na tela!');
             }
         }
     </script>
