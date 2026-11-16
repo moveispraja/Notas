@@ -103,8 +103,7 @@
         
         .modal-footer-historico {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: flex-end;
             border-top: 1px solid #ddd;
             padding-top: 12px;
             margin-top: 12px;
@@ -326,7 +325,6 @@
             </div>
 
             <div class="modal-footer-historico">
-                <button class="btn-clear" style="padding: 8px 14px; font-size: 0.85rem;" onclick="apagarTodoHistorico()">🗑️ Apagar Todo o Histórico</button>
                 <button class="btn-del" style="padding: 8px 14px; font-size: 0.85rem;" onclick="fecharHistorico()">✖ Fechar</button>
             </div>
         </div>
@@ -555,19 +553,9 @@
         function apagarItemHistorico(index) {
             if (confirm('Deseja realmente excluir este lote do histórico?')) {
                 let historico = JSON.parse(localStorage.getItem('historicoNotas')) || [];
-                historico.splice(index, 1); // Remove o item selecionado
+                historico.splice(index, 1);
                 localStorage.setItem('historicoNotas', JSON.stringify(historico));
-                
-                // Atualiza a lista na tela mantendo a pesquisa ativa se houver
                 renderizarHistoricoModal(inputPesquisa.value);
-            }
-        }
-
-        function apagarTodoHistorico() {
-            if (confirm('ATENÇÃO: Deseja apagar TODO o histórico de notas salvas? Esta ação não pode ser desfeita!')) {
-                localStorage.removeItem('historicoNotas');
-                renderizarHistoricoModal();
-                alert('Histórico limpo com sucesso!');
             }
         }
 
