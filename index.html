@@ -101,6 +101,15 @@
         }
         .modal-header h2 { font-size: 1.2rem; color: #8e44ad; }
         
+        .modal-footer-historico {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #ddd;
+            padding-top: 12px;
+            margin-top: 12px;
+        }
+
         /* Campo de Pesquisa no Histórico */
         .search-box {
             width: 100%;
@@ -144,8 +153,18 @@
             align-items: center;
             margin-bottom: 6px;
         }
+        .historico-info {
+            flex: 1;
+            margin-right: 10px;
+            overflow: hidden;
+        }
         .historico-info b { color: #333; display: block; margin-bottom: 3px; }
         .historico-info small { color: #666; }
+        
+        .historico-botoes {
+            display: flex;
+            gap: 6px;
+        }
         
         /* Container principal de páginas para impressão */
         #pages-wrapper {
@@ -304,6 +323,11 @@
             
             <div class="historico-lista" id="historicoListaContent">
                 <!-- Itens salvos aparecerão aqui -->
+            </div>
+
+            <div class="modal-footer-historico">
+                <button class="btn-clear" style="padding: 8px 14px; font-size: 0.85rem;" onclick="apagarTodoHistorico()">🗑️ Apagar Todo o Histórico</button>
+                <button class="btn-del" style="padding: 8px 14px; font-size: 0.85rem;" onclick="fecharHistorico()">✖ Fechar</button>
             </div>
         </div>
     </div>
@@ -467,13 +491,11 @@
 
             let termo = filtro.toLowerCase().trim();
 
-            // Filtragem EXATA: O lote só aparece se o texto do pedido contiver exatamente o termo digitado
             let historicoFiltrado = historico.map((lote, indexOriginal) => {
                 return { lote, indexOriginal };
             }).filter(item => {
                 if (!item.lote || !item.lote.pedidos) return false;
                 
-                // Se tem termo de busca, verifica se está presente em algum pedido do lote
                 if (termo) {
                     return item.lote.pedidos.some(pedido => pedido.toLowerCase().includes(termo));
                 }
@@ -481,21 +503,19 @@
             });
 
             if (historicoFiltrado.length === 0) {
-                historicoListaContent.innerHTML = '<p style="text-align:center; color:#666; padding: 20px;">Nenhum registro encontrado para esta busca.</p>';
+                historicoListaContent.innerHTML = '<p style="text-align:center; color:#666; padding: 20px;">Nenhum registro encontrado.</p>';
                 return;
             }
 
-            // Agrupa por dia, tratando registros antigos sem data (atribuindo uma data padrão se faltar)
             let diasAgrupados = {};
             historicoFiltrado.forEach(item => {
-                let dia = item.lote.dataDia || "Datas Anteriores / Diversos";
+                let dia = item.lote.dataDia || "Datas Anteriores";
                 if (!diasAgrupados[dia]) {
                     diasAgrupados[dia] = [];
                 }
                 diasAgrupados[dia].push(item);
             });
 
-            // Monta o HTML na tela limpo e sem valores "undefined"
             for (let dia in diasAgrupados) {
                 const grupoDiv = document.createElement('div');
                 grupoDiv.className = 'dia-grupo';
@@ -505,9 +525,7 @@
                 diasAgrupados[dia].forEach(item => {
                     let lote = item.lote;
                     let index = item.indexOriginal;
-                    let horario = lote.hora || "Horário não registrado";
-                    
-                    // Pega o nome do primeiro cliente ou a primeira linha para facilitar a identificação visual rápida
+                    let horario = lote.hora || "00:00";
                     let resumoPedido = lote.pedidos[0] ? lote.pedidos[0].split('\n')[0] : "Pedido sem título";
 
                     htmlLotes += `
@@ -516,19 +534,41 @@
                                 <b>🕒 ${horario} — <span style="color:#2980b9;">${resumoPedido}</span></b>
                                 <small>${lote.pedidos.length} pedido(s) neste lote</small>
                             </div>
-                            <button class="btn" style="padding: 8px 14px; font-size: 0.85rem;" onclick="carregarLote(${index})">👁️ Visualizar / Reimprimir</button>
+                            <div class="historico-botoes">
+                                <button class="btn" style="padding: 6px 10px; font-size: 0.8rem;" onclick="carregarLote(${index})">👁️ Ver</button>
+                                <button class="btn-del" style="padding: 6px 10px; font-size: 0.8rem;" onclick="apagarItemHistorico(${index})">🗑️ Excluir</button>
+                            </div>
                         </div>
                     `;
                 });
 
-                    grupoDiv.innerHTML = htmlLotes;
-                    historicoListaContent.appendChild(grupoDiv);
+                grupoDiv.innerHTML = htmlLotes;
+                historicoListaContent.appendChild(grupoDiv);
             }
         }
 
         function filtrarHistorico() {
             let termo = inputPesquisa.value;
             renderizarHistoricoModal(termo);
+        }
+
+        function apagarItemHistorico(index) {
+            if (confirm('Deseja realmente excluir este lote do histórico?')) {
+                let historico = JSON.parse(localStorage.getItem('historicoNotas')) || [];
+                historico.splice(index, 1); // Remove o item selecionado
+                localStorage.setItem('historicoNotas', JSON.stringify(historico));
+                
+                // Atualiza a lista na tela mantendo a pesquisa ativa se houver
+                renderizarHistoricoModal(inputPesquisa.value);
+            }
+        }
+
+        function apagarTodoHistorico() {
+            if (confirm('ATENÇÃO: Deseja apagar TODO o histórico de notas salvas? Esta ação não pode ser desfeita!')) {
+                localStorage.removeItem('historicoNotas');
+                renderizarHistoricoModal();
+                alert('Histórico limpo com sucesso!');
+            }
         }
 
         function fecharHistorico() {
